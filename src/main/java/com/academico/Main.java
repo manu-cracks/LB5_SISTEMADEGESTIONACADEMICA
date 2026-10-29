@@ -1,27 +1,40 @@
 package com.academico;
+
+import com.academico.application.port.in.EstudianteUseCase;
+import com.academico.application.service.EstudianteService;
+import com.academico.domain.event.AuditoriaObserver;
+import com.academico.domain.event.EventManager;
+import com.academico.domain.event.NotificacionObserver;
+import com.academico.domain.model.Estudiante;
+import com.academico.domain.repository.EstudianteRepository;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryJson;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryPostgres;
 import com.academico.presentation.EstudianteUI;
 
-import com.academico.application.service.EstudianteService;
-import com.academico.domain.repository.EstudianteRepository;
-
-import  java.util.Scanner;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
 
         // 1. Adaptador de salida: almacena en JSON
-        //EstudianteRepository repository=new EstudianteRepositoryJson();
-        EstudianteRepository repository=new EstudianteRepositoryPostgres();
+        EstudianteRepository repository = new EstudianteRepositoryJson();
+        //EstudianteRepository repository = new EstudianteRepositoryPostgres();
 
+        // 2. Nucleo de la aplicacion: caso de uso y gestor de eventos
+        EventManager eventManager = new EventManager();
 
-        //2. Nucleo de la aplicacion: caso de uso
-        EstudianteService service=new EstudianteService(repository);
+        // 3. Registrar observadores en el EventManager
+        AuditoriaObserver auditoriaObserver = new AuditoriaObserver();
+        NotificacionObserver notificacionObserver = new NotificacionObserver();
+
+        eventManager.suscribir(auditoriaObserver);
+        eventManager.suscribir(notificacionObserver);
+
+        EstudianteService service = new EstudianteService(repository, eventManager);
 
         // presentacion
-        EstudianteUI estudianteUI=new EstudianteUI(service);
+        EstudianteUI estudianteUI = new EstudianteUI(service);
 
 
         Scanner sc = new Scanner(System.in);
@@ -45,7 +58,7 @@ public class Main {
                     break;
 
                 case 2:
-                   // CursoUI.mostrarMenu(sc);
+                    // CursoUI.mostrarMenu(sc);
                     break;
 
                 case 0:
